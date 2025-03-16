@@ -22,32 +22,34 @@ export class RpgContributors2 extends DDDSuper(I18NMixin(LitElement)) {
   constructor() {
     super();
     this.title = "";
+    this.items = [];
+    this.organization = "haxtheweb";
+    this.repository = "webcomponents";
     this.t = this.t || {};
     this.t = {
       ...this.t,
       title: "Title",
     };
-    this.contributors = [];
-    this.getData();
     this.registerLocalization({
       context: this,
       localesPath:
-        new URL("./locales/rpg-contributors2.ar.json", import.meta.url).href +
+        new URL("./locales/rpg-contributors-example.ar.json", import.meta.url).href +
         "/../",
       locales: ["ar", "es", "hi", "zh"],
     });
+    
   }
 
   // Lit reactive properties
   static get properties() {
     return {
+      ...super.properties,
       title: { type: String },
-      loading: { type: Boolean, reflect: true },
-      items: { type: Array, },
-      value: { type: String },
+      items: { type: Array },
+      organization: { type: String },
+      repository: { type: String },
     };
   }
-
 
   // Lit scoped styles
   static get styles() {
@@ -60,6 +62,7 @@ export class RpgContributors2 extends DDDSuper(I18NMixin(LitElement)) {
         font-family: var(--ddd-font-navigation);
       }
       .wrapper {
+        display: inline-block;
         margin: var(--ddd-spacing-2);
         padding: var(--ddd-spacing-4);
       }
@@ -69,64 +72,40 @@ export class RpgContributors2 extends DDDSuper(I18NMixin(LitElement)) {
     `];
   }
 
-  constructor() {
-    super();
-    this.value = null;
-    this.title = '';
-    this.loading = false;
-    this.items = [];
-  }
-
-  // Lit render the HTML
-  render() {
-    return html`
-    <h2>${this.title}</h2>
-    <details open>
-      <summary>Search inputs</summary>
-      <div>
-        <input id="input" placeholder="Search NASA images" @input="${this.inputChanged}" />
-      </div>
-    </details>
-    <div class="results">
-      ${this.items.map((item, index) => html`
-      <nasa-image
-        source="${item.links[0].href}"
-        title="${item.data[0].title}"
-      ></nasa-image>
-      `)}
-    </div>
-    `;
-  }
-
-  inputChanged(e) {
-    this.value = this.shadowRoot.querySelector('#input').value;
-  }
-  // life cycle will run when anything defined in `properties` is modified
-  updated(changedProperties) {
-    // see if value changes from user input and is not empty
-    if (changedProperties.has('value') && this.value) {
-      this.updateResults(this.value);
+    // Lit render the HTML
+    render() {
+      return html`
+        <div class="results">
+          ${this.items.map((item, index) => html`
+            <div class="wrapper">
+              <h3>${item.login}</h3>
+              <rpg-character
+                seed="${item.login}"
+              ></rpg-character>
+              <slot></slot>
+            </div>
+            `)}
+          </div>
+        </div>`;
     }
-    else if (changedProperties.has('value') && !this.value) {
-      this.items = [];
-    }
-    // @debugging purposes only
-    if (changedProperties.has('items') && this.items.length > 0) {
-      console.log(this.items);
-    }
-  }
 
-  updateResults(value) {
-    this.loading = true;
-    fetch(`https://api.github.com/repos/haxtheweb/webcomponents/contributors=${value}`).then(d => d.ok ? d.json(): {}).then(data => {
-      if (data.collection) {
-        this.items = [];
-        this.items = data.collection.items;
-        this.loading = false;
-      }  
-    });
-  }
+    // life cycle will run when anything defined in `properties` is modified
+    updated(changedProperties) {
+      // see if value changes from user input and is not empty
+      if (changedProperties.has('organization')) {
+       this.updateResults();
+      }
+    }
 
+    updateResults() {
+      fetch(`https://api.github.com/repos/${this.organization}/${this.repository}/contributors`).then(d => d.ok ? d.json(): {}).then(data => {
+        if (data) {
+          this.items = [];
+          this.items = data;
+          console.log(this.items);
+        } 
+      });
+    }
 
   /**
    * haxProperties integration via file reference
