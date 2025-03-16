@@ -33,7 +33,7 @@ export class RpgContributors2 extends DDDSuper(I18NMixin(LitElement)) {
     this.registerLocalization({
       context: this,
       localesPath:
-        new URL("./locales/rpg-contributors-example.ar.json", import.meta.url).href +
+        new URL("./locales/rpg-contributors2.ar.json", import.meta.url).href +
         "/../",
       locales: ["ar", "es", "hi", "zh"],
     });
